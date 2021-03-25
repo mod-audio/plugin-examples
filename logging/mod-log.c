@@ -9,6 +9,8 @@
 #include "lv2/log/log.h"
 #include "lv2/log/logger.h"
 
+#include "lv2-hmi.h"
+
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -19,40 +21,46 @@
 #define PLUGIN_URI "http://moddevices.com/plugins/mod-devel/mod-log"
 
 typedef enum {
-    L_LEVEL     = 0,
+    L_LEVEL = 0,
 } PortIndex;
 
 typedef struct {
-    //Control port
+    // Control ports
     float* level;
 
-    //Log feature
+    // Features
     LV2_URID_Map*  map;
     LV2_Log_Logger logger;
+    LV2_HMI_WidgetControl* hmi;
 
-    //variables
+    // Internal state
     int sample_counter;
     int sample_rate;
+
+    // Addressing info
+    LV2_HMI_Addressing addressing;
 } Control;
 
 static LV2_Handle
 instantiate(const LV2_Descriptor*     descriptor,
-        double                    rate,
-        const char*               bundle_path,
-        const LV2_Feature* const* features)
+            double                    rate,
+            const char*               bundle_path,
+            const LV2_Feature* const* features)
 {
-    Control* self = (Control*)malloc(sizeof(Control));
+    Control* self = (Control*)calloc(sizeof(Control), 1);
 
     // Get host features
     // clang-format off
     const char* missing = lv2_features_query(
             features,
-            LV2_LOG__log,         &self->logger.log, false,
-            LV2_URID__map,        &self->map,        true,
+            LV2_LOG__log,           &self->logger.log, false,
+            LV2_URID__map,          &self->map,        true,
+            LV2_HMI__WidgetControl, &self->hmi,        true,
             NULL);
     // clang-format on
 
     lv2_log_logger_set_map(&self->logger, self->map);
+
     if (missing) {
         lv2_log_error(&self->logger, "Missing feature <%s>\n", missing);
         free(self);
@@ -60,7 +68,6 @@ instantiate(const LV2_Descriptor*     descriptor,
     }
 
     self->sample_rate = (int)rate;
-    self->sample_counter = 0;
 
     return (LV2_Handle)self;
 }
@@ -82,6 +89,9 @@ connect_port(LV2_Handle instance,
 static void
 activate(LV2_Handle instance)
 {
+    Control* self = (Control*) instance;
+
+    self->sample_counter = 0;
 }
 
 static void
@@ -89,18 +99,21 @@ run(LV2_Handle instance, uint32_t n_samples)
 {
     Control* self = (Control*) instance;
 
-    if (self->sample_counter >= self->sample_rate) {
-        lv2_log_error(&self->logger, "this is a error message!\n");
-        lv2_log_warning(&self->logger, "this is a warning!\n");
-        lv2_log_note(&self->logger, "this is a note!\n");
-        lv2_log_trace(&self->logger, "this is a trace!\n");
-        self->sample_counter = 0;
-    }
+    for (unsigned i = 0; i < n_samples; ++i, ++self->sample_counter) {
+        if (self->sample_counter == self->sample_rate) {
+            /*
+            lv2_log_error(&self->logger, "this is a error message!\n");
+            lv2_log_warning(&self->logger, "this is a warning!\n");
+            lv2_log_note(&self->logger, "this is a note!\n");
+            */
+            lv2_log_trace(&self->logger, "sample rate counter +1\n");
+            self->sample_counter = 0;
 
-    for (unsigned i = 0; i < n_samples; i++) {
-        self->sample_counter++;
+//             if (self->addressing != NULL) {
+                self->hmi->set_led_colour(self->hmi->handle, self->addressing, LV2_HMI_Colour_Blue);
+//             }
+        }
     }
-
 }
 
 static void
@@ -114,9 +127,35 @@ cleanup(LV2_Handle instance)
     free(instance);
 }
 
+static void
+addressed(LV2_Handle handle, uint32_t index, LV2_HMI_Addressing addressing, const LV2_HMI_AddressingInfo* info)
+{
+    if (index != 0)
+        return;
+
+    Control* self = (Control*) handle;
+    self->addressing = addressing;
+}
+
+static void
+unaddressed(LV2_Handle handle, uint32_t index)
+{
+    if (index != 0)
+        return;
+
+    Control* self = (Control*) handle;
+    self->addressing = NULL;
+}
+
 static const void*
 extension_data(const char* uri)
 {
+    static const LV2_HMI_PluginNotification hmiNotif = {
+        addressed,
+        unaddressed,
+    };
+    if (!strcmp(uri, ""))
+        return &hmiNotif;
     return NULL;
 }
 

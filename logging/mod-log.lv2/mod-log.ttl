@@ -11,37 +11,36 @@
 @prefix urid: <http://lv2plug.in/ns/ext/urid#> .
 
 <http://moddevices.com/plugins/mod-devel/mod-log>
-a lv2:Plugin, mod:ControlVoltagePlugin;
+    a lv2:Plugin, mod:ControlVoltagePlugin;
 
-doap:name "Log eg";
-doap:license "GPL v2+";
-doap:developer [
-    foaf:name "Bram Giesen";
-    foaf:homepage <>;
-    foaf:mbox <mailto:bram@moddevices.com>;
+    doap:name "Log eg";
+    doap:license "GPL v2+";
+    doap:developer [
+        foaf:name "Bram Giesen";
+        foaf:homepage <>;
+        foaf:mbox <mailto:bram@moddevices.com>;
     ];
 
-doap:maintainer [
-    foaf:name "MOD";
-    foaf:homepage <http://moddevices.com>;
-    foaf:mbox <mailto:bram@moddevices.com>;
+    doap:maintainer [
+        foaf:name "MOD";
+        foaf:homepage <http://moddevices.com>;
+        foaf:mbox <mailto:bram@moddevices.com>;
     ];
 
     lv2:minorVersion 3;
     lv2:microVersion 0;
 
-rdfs:comment """
+    rdfs:comment """
 A plugin for demonsration perposes on how to use the lv2 logging functionality
-""";
+    """;
 
-lv2:port
-[
-    a lv2:InputPort ,
-    lv2:ControlPort ;
-    lv2:index 1 ;
-    lv2:symbol "Control" ;
-    lv2:name "Control";
-    lv2:default 1.0 ;
-    lv2:minimum 0.0 ;
-    lv2:maximum 10.0 ;
-    mod:volts ] .
+    lv2:port [
+        a lv2:InputPort ,
+        lv2:ControlPort ;
+        lv2:index 0 ;
+        lv2:symbol "Control" ;
+        lv2:name "Control";
+        lv2:default 1.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 10.0 ;
+    ] .
