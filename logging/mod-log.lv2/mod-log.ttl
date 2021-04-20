@@ -27,6 +27,9 @@
         foaf:mbox <mailto:bram@moddevices.com>;
     ];
 
+    lv2:requiredFeature <http://moddevices.com/ns/hmi#WidgetControl>;
+    lv2:extensionData <http://moddevices.com/ns/hmi#PluginNotification>;
+
     lv2:minorVersion 3;
     lv2:microVersion 0;
 
