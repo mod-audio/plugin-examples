@@ -22,11 +22,13 @@
 
 typedef enum {
     L_LEVEL = 0,
+    L_TRIGGER,
 } PortIndex;
 
 typedef struct {
     // Control ports
     float* level;
+    float* trigger;
 
     // Features
     LV2_URID_Map*  map;
@@ -85,6 +87,9 @@ connect_port(LV2_Handle instance,
         case L_LEVEL:
             self->level = (float*)data;
             break;
+        case L_TRIGGER:
+            self->trigger = (float*)data;
+            break;
     }
 }
 
@@ -111,11 +116,14 @@ run(LV2_Handle instance, uint32_t n_samples)
             self->sample_counter = 0;
 
             if (self->addressing != NULL) {
-                if (++self->colour == LV2_HMI_LED_Colour_White) {
-                    self->colour = LV2_HMI_LED_Colour_Red;
+                if (++self->colour > LV2_HMI_LED_Colour_White) {
+                    self->colour = LV2_HMI_LED_Colour_Off;
                 }
                 lv2_log_trace(&self->logger, "HMI set color to %i", self->colour);
-                self->hmi->set_led(self->hmi->handle, self->addressing, self->colour, 0, 0);
+                if ((int)*self->trigger)
+                    self->hmi->set_led(self->hmi->handle, self->addressing, self->colour, 100, 100);
+                else
+                    self->hmi->set_led(self->hmi->handle, self->addressing, self->colour, 0, 0);
             } else {
                 lv2_log_trace(&self->logger, "HMI not addressed");
             }
@@ -137,9 +145,6 @@ cleanup(LV2_Handle instance)
 static void
 addressed(LV2_Handle handle, uint32_t index, LV2_HMI_Addressing addressing, const LV2_HMI_AddressingInfo* info)
 {
-    if (index != 0)
-        return;
-
     Control* self = (Control*) handle;
     self->addressing = addressing;
 }
