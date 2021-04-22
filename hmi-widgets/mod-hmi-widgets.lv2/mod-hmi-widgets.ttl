@@ -10,21 +10,21 @@
 @prefix midi: <http://lv2plug.in/ns/ext/midi#> .
 @prefix urid: <http://lv2plug.in/ns/ext/urid#> .
 
-<http://moddevices.com/plugins/mod-devel/mod-log>
-    a lv2:Plugin, mod:ControlVoltagePlugin;
+<http://moddevices.com/plugins/mod-devel/mod-hmi-widgets>
+    a lv2:Plugin, mod:UtilityPlugin;
 
-    doap:name "Log eg";
+    doap:name "HMI Widgets";
     doap:license "GPL v2+";
     doap:developer [
-        foaf:name "Bram Giesen";
+        foaf:name "Jan Janssen";
         foaf:homepage <>;
-        foaf:mbox <mailto:bram@moddevices.com>;
+        foaf:mbox <mailto:jan@moddevices.com>;
     ];
 
     doap:maintainer [
         foaf:name "MOD";
         foaf:homepage <http://moddevices.com>;
-        foaf:mbox <mailto:bram@moddevices.com>;
+        foaf:mbox <mailto:jan@moddevices.com>;
     ];
 
     lv2:requiredFeature <http://moddevices.com/ns/hmi#WidgetControl>;
@@ -34,15 +34,26 @@
     lv2:microVersion 0;
 
     rdfs:comment """
-A plugin for demonsration perposes on how to use the lv2 logging functionality
+A plugin for demonsration perposes on how to use the MOD HMI widgets functionality
     """;
 
     lv2:port [
+        a lv2:InputPort, lv2:ControlPort;
+        lv2:index 0;
+        lv2:symbol "TOGGLE";
+        lv2:name "Toggle Test";
+        lv2:portProperty lv2:integer, lv2:toggled;
+        lv2:default 0;
+        lv2:minimum 0;
+        lv2:maximum 1;
+    ]
+    ,
+    [
         a lv2:InputPort ,
         lv2:ControlPort ;
-        lv2:index 0 ;
-        lv2:symbol "Control" ;
-        lv2:name "Control";
+        lv2:index 1 ;
+        lv2:symbol "LINEAR" ;
+        lv2:name "Linear Test";
         lv2:default 1.0 ;
         lv2:minimum 0.0 ;
         lv2:maximum 10.0 ;
