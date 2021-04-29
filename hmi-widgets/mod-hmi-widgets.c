@@ -25,6 +25,87 @@ typedef enum {
     PLUGIN_LINEAR_ASSIGNMENT,
 } PortIndex;
 
+#define LYRIC_WORD_COUNT 74
+
+const char* all_star[] =
+{
+    (char*)("Somebody"),
+    (char*)("Once"),
+    (char*)("Told"),
+    (char*)("Me"),
+    (char*)("The"),
+    (char*)("World"),
+    (char*)("Is"),
+    (char*)("Gonna"),
+    (char*)("Roll"),
+    (char*)("Me I"),
+    (char*)("ain't"),
+    (char*)("the"),
+    (char*)("sharpest"),
+    (char*)("tool"),
+    (char*)("in"),
+    (char*)("the"),
+    (char*)("shed"),
+    (char*)("She"),
+    (char*)("was"),
+    (char*)("looking"),
+    (char*)("kind"),
+    (char*)("of"),
+    (char*)("dumb"),
+    (char*)("with"),
+    (char*)("her"),
+    (char*)("finger"),
+    (char*)("and"),
+    (char*)("her"),
+    (char*)("thumb"),
+    (char*)("In"),
+    (char*)("the"),
+    (char*)("shape"),
+    (char*)("of"),
+    (char*)("an"),
+    (char*)("L"),
+    (char*)("on"),
+    (char*)("her"),
+    (char*)("forehead"),
+    (char*)("Well"),
+    (char*)("the"),
+    (char*)("years"),
+    (char*)("start"),
+    (char*)("coming"),
+    (char*)("and"),
+    (char*)("they"),
+    (char*)("don't"),
+    (char*)("stop"),
+    (char*)("coming"),
+    (char*)("Fed"),
+    (char*)("to"),
+    (char*)("the"),
+    (char*)("rules"),
+    (char*)("and"),
+    (char*)("I"),
+    (char*)("hit"),
+    (char*)("the"),
+    (char*)("ground"),
+    (char*)("running"),
+    (char*)("Didn't"),
+    (char*)("make"),
+    (char*)("sense"),
+    (char*)("not"),
+    (char*)("to"),
+    (char*)("live"),
+    (char*)("for"),
+    (char*)("fun"),
+    (char*)("Your"),
+    (char*)("brain"),
+    (char*)("gets"),
+    (char*)("smart"),
+    (char*)("but"),
+    (char*)("your"),
+    (char*)("head"),
+    (char*)("gets"),
+    (char*)("dumb"),
+};
+
 typedef struct {
     // Control ports
     float* toggle;
@@ -38,6 +119,9 @@ typedef struct {
     // Internal state
     int sample_counter;
     int sample_rate;
+
+    // To send to lables
+    int run_count;
 
     // HMI Widgets stuff
     LV2_HMI_Addressing toggle_addressing;
@@ -73,6 +157,7 @@ instantiate(const LV2_Descriptor*     descriptor,
 
     self->sample_rate = (int)rate;
     self->colour = LV2_HMI_LED_Colour_Off;
+    self->run_count = 0;
 
     return (LV2_Handle)self;
 }
@@ -110,7 +195,15 @@ run(LV2_Handle instance, uint32_t n_samples)
     for (unsigned i = 0; i < n_samples; ++i, ++self->sample_counter) {
         if (self->sample_counter == self->sample_rate) {
 
+            if (self->run_count > LYRIC_WORD_COUNT)
+                self->run_count = 0;
+
             self->sample_counter = 0;
+
+            if (self->linear_addressing != NULL)  {
+                self->hmi->set_label(self->hmi->handle, self->linear_addressing, all_star[self->run_count++]);
+                self->hmi->set_unit(self->hmi->handle, self->linear_addressing, all_star[self->run_count++]);
+            }
 
             if (self->toggle_addressing != NULL) {
                 if (++self->colour > LV2_HMI_LED_Colour_White) {
@@ -121,9 +214,8 @@ run(LV2_Handle instance, uint32_t n_samples)
                     self->hmi->set_led(self->hmi->handle, self->toggle_addressing, self->colour, 100, 100);
                 else
                     self->hmi->set_led(self->hmi->handle, self->toggle_addressing, self->colour, 0, 0);
-            } 
-            if (self->linear_addressing != NULL)  {
-                ;
+
+                self->hmi->set_label(self->hmi->handle, self->toggle_addressing, all_star[self->run_count++]);
             }
 
             if ((self->linear_addressing == NULL) && (self->toggle_addressing == NULL) ) {
