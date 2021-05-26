@@ -1,11 +1,9 @@
 /*
   LV2 HMI integration extension
   Copyright 2021 Filipe Coelho <falktx@falktx.com>
-
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
   copyright notice and this permission notice appear in all copies.
-
   THIS SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
   WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
   MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
@@ -52,10 +50,11 @@ typedef void* LV2_HMI_WidgetControl_Handle;
  *  ...
  */
 typedef enum {
-    LV2_HMI_AddressingCapability_LED   = 1 << 0,
-    LV2_HMI_AddressingCapability_Label = 1 << 1,
-    LV2_HMI_AddressingCapability_Value = 1 << 2,
-    LV2_HMI_AddressingCapability_Unit  = 1 << 3
+    LV2_HMI_AddressingCapability_LED        = 1 << 0,
+    LV2_HMI_AddressingCapability_Label      = 1 << 1,
+    LV2_HMI_AddressingCapability_Value      = 1 << 2,
+    LV2_HMI_AddressingCapability_Unit       = 1 << 3,
+    LV2_HMI_AddressingCapability_Indicator  = 1 << 4
 } LV2_HMI_AddressingCapabilities;
 
 /**
@@ -143,9 +142,15 @@ typedef struct {
      * ...
      */
     void (*set_unit)(LV2_HMI_WidgetControl_Handle handle,
-                      LV2_HMI_Addressing addressing,
-                      const char* unit);
+                     LV2_HMI_Addressing addressing,
+                     const char* unit);
 
+    /**
+     * ...
+     */
+    void (*set_indicator)(LV2_HMI_WidgetControl_Handle handle,
+                          LV2_HMI_Addressing addressing,
+                          const float indicator_poss);
 } LV2_HMI_WidgetControl;
 
 #ifdef __cplusplus

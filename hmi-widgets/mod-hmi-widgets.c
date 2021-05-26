@@ -202,7 +202,10 @@ run(LV2_Handle instance, uint32_t n_samples)
 
             if (self->linear_addressing != NULL)  {
                 self->hmi->set_label(self->hmi->handle, self->linear_addressing, all_star[self->run_count++]);
+                self->hmi->set_value(self->hmi->handle, self->linear_addressing, all_star[self->run_count++]);
                 self->hmi->set_unit(self->hmi->handle, self->linear_addressing, all_star[self->run_count++]);
+
+                self->hmi->set_indicator(self->hmi->handle, self->linear_addressing, (float)((float)self->run_count / (float)LYRIC_WORD_COUNT));
             }
 
             if (self->toggle_addressing != NULL) {
