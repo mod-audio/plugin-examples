@@ -34,7 +34,21 @@
     lv2:microVersion 0;
 
     rdfs:comment """
-A plugin for demonsration perposes on how to use the MOD HMI widgets functionality, individually for each type
+A plugin for demonstration purposes on how to use the MOD HMI widgets functionality, individually for each type.
+
+The following behaviour is expected per control:
+
+ bypass: changes led color according to number of active addressings on the plugin
+
+ foot led test: same idea as bypass, but it has 90% vs 10% blink time, depending if on or off
+
+ foot label test: sets the label, acts as toggle (so suitable for foots)
+
+ knob indicator test: sets the indicator, acts as linear control
+ 
+ knob value test: sets the value, acts as linear control
+
+ knob unit test: sets the unit, acts as linear control
     """;
 
     lv2:port [

@@ -150,7 +150,7 @@ typedef struct {
      */
     void (*set_indicator)(LV2_HMI_WidgetControl_Handle handle,
                           LV2_HMI_Addressing addressing,
-                          const float indicator_poss);
+                          const float normalized_indicator_pos);
 } LV2_HMI_WidgetControl;
 
 #ifdef __cplusplus

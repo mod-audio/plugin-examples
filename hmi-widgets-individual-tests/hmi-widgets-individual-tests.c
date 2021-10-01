@@ -58,14 +58,12 @@ instantiate(const LV2_Descriptor*     descriptor,
     Control* self = (Control*)calloc(1, sizeof(Control));
 
     // Get host features
-    // clang-format off
     const char* missing = lv2_features_query(
             features,
             LV2_LOG__log,           &self->logger.log, false,
             LV2_URID__map,          &self->map,        true,
             LV2_HMI__WidgetControl, &self->hmi,        true,
             NULL);
-    // clang-format on
 
     lv2_log_logger_set_map(&self->logger, self->map);
 
@@ -75,7 +73,7 @@ instantiate(const LV2_Descriptor*     descriptor,
         return NULL;
     }
 
-    self->sample_overflow = (int)rate * 60;
+    self->sample_overflow = (int)rate * 60; // 60s, 1 minute
 
     return (LV2_Handle)self;
 }
@@ -118,7 +116,7 @@ run(LV2_Handle instance, uint32_t n_samples)
             continue;
 
         self->sample_counter = 0;
-        self->reset = true;
+        self->reset = false;
 
         int numaddrs = 0;
 
@@ -132,7 +130,7 @@ run(LV2_Handle instance, uint32_t n_samples)
                 continue;
 
             const float value = *self->ports[j];
-            LV2_HMI_Addressing* addr = &self->addressings[j];
+            LV2_HMI_Addressing addr = self->addressings[j];
             // LV2_HMI_AddressingInfo* info = &self->infos[j];
 
             switch (j)
@@ -148,44 +146,48 @@ run(LV2_Handle instance, uint32_t n_samples)
                                    value > 0.5f ? 900 : 100, value > 0.5f ? 100 : 900);
                 break;
             case PARAMETER_FOOT_LABEL:
-                self->hmi->set_label(self->hmi->handle, addr, "label");
+                self->hmi->set_label(self->hmi->handle, addr, "x-label-x");
                 break;
             case PARAMETER_KNOB_LABEL:
-                self->hmi->set_label(self->hmi->handle, addr, "knob");
+                self->hmi->set_label(self->hmi->handle, addr, "x-knob-x");
                 break;
             case PARAMETER_KNOB_INDICATOR:
-                self->hmi->set_indicator(self->hmi->handle, addr, numaddrs);
+                self->hmi->set_indicator(self->hmi->handle, addr, (float)numaddrs / PARAMETER_COUNT);
                 break;
             case PARAMETER_KNOB_VALUE:
-                self->hmi->set_value(self->hmi->handle, addr, "value");
+                self->hmi->set_value(self->hmi->handle, addr, "x-value-x");
                 break;
             case PARAMETER_KNOB_UNIT:
-                self->hmi->set_unit(self->hmi->handle, addr, "unit");
+                self->hmi->set_unit(self->hmi->handle, addr, "x-unit-x");
                 break;
             }
         }
     }
 
-    for (int j=0; j<PARAMETER_COUNT; ++j)
+    for (int i=0; i<PARAMETER_COUNT; ++i)
     {
-        const float value = *self->ports[j];
+        const float value = *self->ports[i];
 
-        if (self->last[j] == value)
+        if (self->last[i] == value)
             continue;
 
-        self->last[j] = value;
+        self->last[i] = value;
+
+        if (! self->addressings[i])
+            continue;
 
         int numaddrs = 0;
-        if (self->addressings[j])
-            ++numaddrs;
+        for (int j=0; j<PARAMETER_COUNT; ++j)
+            if (self->addressings[j])
+                ++numaddrs;
 
-        LV2_HMI_Addressing* addr = &self->addressings[j];
+        LV2_HMI_Addressing addr = self->addressings[i];
 
-        if (j == PARAMETER_BYPASS_LED && ! usedbypass)
+        if (i == PARAMETER_BYPASS_LED && ! usedbypass)
             self->hmi->set_led(self->hmi->handle, addr,
                                value > 0.5f ? led_based_on_numaddrs(numaddrs) : LV2_HMI_LED_Colour_Off, 0, 0);
 
-        if (j == PARAMETER_FOOT_LED && ! usedfootled)
+        if (i == PARAMETER_FOOT_LED && ! usedfootled)
             self->hmi->set_led(self->hmi->handle, addr, led_based_on_numaddrs(numaddrs),
                                value > 0.5f ? 900 : 100, value > 0.5f ? 100 : 900);
     }
